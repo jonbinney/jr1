@@ -1,6 +1,6 @@
 <launch>
   <node pkg="nmea_gps_driver" type="nmea_gps_driver.py" name="gps">
-    <param name="port" value="/dev/ttyUSB0"/>
+    <param name="port" value="/dev/gps"/>
     <param name="baud" value="9600"/>
     
     <!-- if this is true, should also get velocity data, but instead I

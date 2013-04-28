@@ -1,2 +1,2 @@
 # identify
-SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AH013GUH", SYMLINK+="gps", MODE="0660"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AH013GUH", MODE="666", SYMLINK+="gps"
