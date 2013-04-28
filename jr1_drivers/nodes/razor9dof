@@ -1,0 +1,46 @@
+PACKAGE_NAME='magellan'
+import roslib; roslib.load_manifest(PACKAGE_NAME)
+import time, re, threading
+import numpy as np
+from matplotlib import pyplot as plt
+import serial
+from tf import transformations
+
+        
+# number of data points to plot
+N = 400
+data_lock = threading.Lock()
+accelerometer_data = []
+time_to_exit = False
+
+plt.ion()
+fig = plt.figure()
+ax = fig.add_subplot(111)
+plot_line, = ax.plot([0])
+ax.set_xlim(0, N)
+ax.set_ylim(-300, 300)
+plt.show()
+
+# start plotting thread
+serial_thread = threading.Thread(target=run_serial)
+serial_thread.start()
+
+try:
+    while True:
+        time.sleep(0.01)
+        with data_lock:
+            ydata = [v[0] for v in accelerometer_data[-N:]]
+        if len(ydata) == 0:
+            continue
+        xdata = range(len(ydata))
+        plot_line.set_xdata(xdata)
+        plot_line.set_ydata(ydata)
+        plt.draw()
+
+        
+except KeyboardInterrupt:
+    print 'Exiting'
+
+time_to_exit = True
+print 'Closing serial %s' % ser.portstr
+ser.close()
