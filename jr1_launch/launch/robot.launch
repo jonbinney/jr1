@@ -1,0 +1,3 @@
+<launch>
+  <include file="$(find jr1_launch)/launch/gps.launch"/>
+</launch>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+  <name>jr1_launch</name>
+  <version>0.0.1</version>
+  <description>The jr1_launch package</description>
+
+  <maintainer email="jon.binney@gmail.com">Jon Binney</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>nmea_gps_driver</run_depend>
+</package>
