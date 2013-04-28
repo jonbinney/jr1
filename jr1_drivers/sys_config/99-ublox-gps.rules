@@ -1,2 +1,1 @@
-# identify
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AH013GUH", MODE="666", SYMLINK+="gps"
