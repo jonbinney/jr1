@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+import sys, yaml
+import rospy
+import pyproj
+from tf.msg import tfMessage
+from geometry_msgs.msg import Transform, TransformStamped, Vector3, Quaternion
+from sensor_msgs.msg import NavSatFix
+from visualization_msgs.msg import Marker
+
+course_config_file = sys.argv[1]
+
+print 'Loading course config from %s' % course_config_file
+course_config = yaml.load(open(course_config_file))
+
+rospy.init_node('executive')
+
+g = pyproj.Geod(ellps='WGS84')
+
+lat_prev, lon_prev = None, None
+for lat, lon in course_config['waypoints']:
+    print lat, lon
+    
+    if lat_prev is not None:
+        az01, az10, dist = g.inv(lon_prev, lat_prev, lon, lat)
+        print ' ', az01, az10, dist
+
+    lat_prev, lon_prev = lat, lon
+
+rospy.spin()
+

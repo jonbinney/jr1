@@ -1,3 +1,5 @@
 <launch>
-  <include file="$(find jr1_launch)/launch/gps.launch"/>
+  <group ns="gps">
+    <include file="$(find jr1_launch)/launch/gps.launch"/>
+  </group>
 </launch>

@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+import rospy
+from tf.msg import tfMessage
+from geometry_msgs.msg import Transform, TransformStamped, Vector3, Quaternion
+from sensor_msgs.msg import NavSatFix
+
+class NavFilter:
+    def __init__(self):
+        self._gps_sub = rospy.Subscriber('/gps/fix', NavSatFix, self.gps_cb)
+        self._root_fix_pub = rospy.Publisher('root_fix', NavSatFix)
+        self._root_fix = None
+
+        rospy.Timer(rospy.Duration(0.1), self.publish_root_fix, oneshot=False)
+
+    def publish_root_fix(self, event):
+        if self._root_fix is not None:
+            self._root_fix_pub.publish(self._root_fix)
+
+    def gps_cb(self, msg):
+        rospy.loginfo('Got gps: %f, %f', msg.latitude, msg.longitude)
+
+        if self._root_fix is None:
+            # this is our first gps fix
+            self._root_fix = msg
+
+if __name__ == '__main__':
+    rospy.init_node('nav')
+    nf = NavFilter()
+    rospy.spin()
