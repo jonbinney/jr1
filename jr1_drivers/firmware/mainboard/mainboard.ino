@@ -65,6 +65,23 @@ unsigned char receive_packet(unsigned char *buf) {
   
   return 0;
 }
+
+#define COMMAND_SET_PWM 0
+
+void handle_command_set_pwm(unsigned char *buf) {
+  
+}
+
+void handle_packet(unsigned char *buf) {
+  unsigned char command;
+  
+  command = buf[0];
+  switch(command) {
+    case COMMAND_SET_PWM:
+      handle_command_set_pwm(&(buf[1]));
+  }
+    
+}
   
 void setup() {
   Serial.begin(38400); 
