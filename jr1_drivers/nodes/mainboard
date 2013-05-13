@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+import time, re, threading, sys, random
+import numpy as np
+from matplotlib import pyplot as plt
+import serial
+
+class ChecksumError(Exception):
+    pass
+
+SERIAL_PAYLOAD_SIZE = 16
+SERIAL_PREAMBLE = 'U9'
+
+def send_packet(ser, buf):
+    '''
+    Args:
+        ser (serial.Serial) - Serial object to write to
+        buf (str) - Buffer to send
+    '''
+    ser.write(SERIAL_PREAMBLE)
+
+    checksum = np.uint8(0)
+    for byte_i in range(SERIAL_PAYLOAD_SIZE):
+        ser.write(buf[byte_i])
+        checksum ^= ord(buf[byte_i])
+
+    ser.write(chr(checksum))
+
+def receive_packet(ser):
+    # look for message preamble
+    state = 0
+    while True:
+        if state == len(SERIAL_PREAMBLE):
+            break
+
+        input_byte = ser.read()
+        if input_byte == SERIAL_PREAMBLE[state]:
+            state += 1
+        else:
+            state = 0
+
+    checksum = np.uint8(0)
+    data = []
+    while len(data) < SERIAL_PAYLOAD_SIZE:
+        input_str = ser.read()
+        if len(input_str) == 0:
+            continue
+        input_byte = ord(input_str)
+        checksum ^= input_byte
+
+        data.append(input_byte)
+
+    expected_checksum = ord(ser.read())
+    if checksum != expected_checksum:
+        raise ChecksumError()
+
+    return ''.join([chr(x) for x in data])
+
+def make_random_payload():
+    data = []
+    for ii in range(SERIAL_PAYLOAD_SIZE):
+        data.append(chr(ord('A') + int(random.random()* 26)))
+    return ''.join(data)
+
+port = sys.argv[1]
+baudrate = 38400
+ser = serial.Serial(port, baudrate, timeout=0.1)
+
+time.sleep(2.0)
+
+packet_i = 0
+t_start = time.time()
+for ii in range(1000):
+    payload = make_random_payload()
+    print 'Sending:', payload
+    send_packet(ser, payload)
+
+    response = receive_packet(ser)
+
+    print 'Response:', response
+
+    if response != payload:
+        dieeeeeee
+
+    print ''
+
+    packet_i += 1
+
+delta_t = time.time() - t_start
+print 'Sent %d packets in %.3f seconds (%.3fhz)' % (
+    packet_i, delta_t, packet_i/delta_t)
+
+
+ser.close()

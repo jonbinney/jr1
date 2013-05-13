@@ -1,0 +1,5 @@
+Servo PWM:
+Pulse width at neutral ~1.28ms
+At full left: ~1.52ms
+At full right: ~1.04 ms
+Period of PWM: ~13.1ms
