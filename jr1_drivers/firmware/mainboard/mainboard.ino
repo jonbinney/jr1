@@ -1,11 +1,20 @@
-#define BUFFER_SIZE 1000
-unsigned char output_byte;
-unsigned char buffer[BUFFER_SIZE];
-#define SCOPE_PIN 8
 
 #define SERIAL_PREAMBLE "U9"
 #define SERIAL_PREAMBLE_LENGTH 2
 #define SERIAL_PAYLOAD_SIZE 16
+
+struct SerialPacket {
+  unsigned char sequence_number;
+  unsigned char message_type;
+  unsigned char data[SERIAL_PAYLOAD_SIZE];
+  unsigned char checksum;
+};
+
+
+Struct PWMCommand {
+  unsigned char led_pwm;
+  unsigned char motor_pwm;
+};
 
 void send_packet(unsigned char *buf) {
   Serial.write(SERIAL_PREAMBLE);
@@ -45,7 +54,7 @@ unsigned char receive_packet(unsigned char *buf) {
   unsigned char buf_i = 0;
   unsigned char checksum = 0;
   while(buf_i < SERIAL_PAYLOAD_SIZE) {
-    while(Serial.available() < 1)
+    while(Serial.available() < sizeof(SerialPacket)
       /* wait */;
     input_byte = Serial.read();
 
@@ -66,26 +75,54 @@ unsigned char receive_packet(unsigned char *buf) {
   return 0;
 }
 
-#define COMMAND_SET_PWM 0
 
-void handle_command_set_pwm(unsigned char *buf) {
+#define MESSAGE_SET_PWM 0
+#define MESSAGE_STATUS 1
+#define MESSAGE_PING 2
+#define MESSAGE_PONG 3
+
+#define RESULT_SUCCESS 0
+#define RESULT_UNKNOWN_COMMAND 1
+#define RESULT_OTHER_ERROR 2
+#define RESULT_CHECKSUM_ERROR 3
+
+void handle_ping(unsigned char *recv_buf, unsigned char *send_buf) {
+  unsigned char byte_i;
   
+  send_buf[0] = MESSAGE_PONG;
+  for(byte_i = 1; byte_i < SERIAL_PAYLOAD_SIZE; byte_i++) {
+    send_buf[byte_i] = recv_buf[byte_i];
+  }
 }
 
-void handle_packet(unsigned char *buf) {
+void handle_command_set_pwm(unsigned char *recv_buf, unsigned char *send_buf) {
+    OCR2A = rec_buf[1];
+    OCR2B = rec_buf[2];
+    send_buf[1] = REC_SUCCESS;
+    status_buf[2] = last_result;
+    status_buf[3] = OCR2A;
+    status_buf[4] = OCR2B;
+}
+
+void handle_packet(unsigned char *recv_buf, unsigned char *send_buf) {
   unsigned char command;
   
   command = buf[0];
   switch(command) {
-    case COMMAND_SET_PWM:
-      handle_command_set_pwm(&(buf[1]));
-  }
-    
+    case MESSAGE_SET_PWM:
+      return handle_command_set_pwm(recv_buf, send_buf);
+      break;
+    case MESSAGE_PING:
+      return handle_command_ping(recv_buf, send_buf);
+      break;
+    default:
+      return RESULT_UNKNOWN_COMMAND;
+    }
 }
   
 void setup() {
   Serial.begin(38400); 
-  /*
+ 
   pinMode(SCOPE_PIN, INPUT);
   
   pinMode(3, OUTPUT); // this is output "B"
@@ -94,15 +131,19 @@ void setup() {
   TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20);
   OCR2A = 20; // pin 11
   OCR2B = 29; // pin 3
-  */
+
 }
 
 void loop() {
-  unsigned char serial_buf[SERIAL_PAYLOAD_SIZE];
+  SerialPacket recv_pkt, send_pkt;
+  unsigned char result;
   
-  if(receive_packet(serial_buf) < 0)
-    send_packet((unsigned char *) "incorrect checksum!!!!!");
-  else
-    send_packet(serial_buf);
- 
+  if(receive_packet(serial_buf) < 0) {
+    result = RESULT_CHECKSUM_ERROR;
+  }
+  else {
+    handle_packet(recv_buf, send_buf);
+  }
+  
+  send_packet(send_buf);
 }
