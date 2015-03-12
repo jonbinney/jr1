@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+import serial
+import sys, time, struct
+
+
+def compute_checksum(msg):
+    return sum([ord(c) for c in msg]) & 0x7f
+
+def create_command_string(cmd, args=[]):
+    '''
+    Take an integer command number and a list of integer (byte sized) args,
+    and return a command string that includes the checksum.
+
+    Assumes roboclaw device address is 0x80 (the default)
+    '''
+    cmd_str = ''.join([chr(0x80), chr(cmd)] + [chr(c) for c in args])
+    return cmd_str + chr(compute_checksum(cmd_str))
+
+class RoboClaw:
+    def __init__(self, port='/dev/ttyACM0', baudrate=38400):
+        self._ser = serial.Serial(port, baudrate)
+
+    def get_battery_voltage(self):
+        self._ser.write(create_command_string(24))
+        response = self._ser.read(3)
+        (voltage,) = struct.unpack('>H', response[:2])
+        return voltage*.1
+        time.sleep(0.01)
+
+    def get_motor_currents(self):
+        '''
+        Get current of motors in Amps.
+        '''
+        self._ser.write(create_command_string(49))
+        response = self._ser.read(5)
+        (m1_cur, m2_cur) = struct.unpack('>HH', response[:4])
+        return m1_cur*0.01, m2_cur*0.01
+        time.sleep(0.01)
+
+    def drive(self, speed):
+        self._ser.write(create_command_string(12, [speed]))
+        time.sleep(0.01)
+
+rc = RoboClaw()
+
+while True:
+    voltage = rc.get_battery_voltage()
+    rc.drive(64)
+    m1_cur, m2_cur = rc.get_motor_currents()
+    time.sleep(0.1)
+    print voltage, m1_cur, m2_cur
+
+ser.close()
+
+
