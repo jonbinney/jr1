@@ -1,5 +1,21 @@
 <launch>
-  <group ns="gps">
-    <include file="$(find jr1_launch)/launch/gps.launch"/>
-  </group>
+  <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="gps">
+    <param name="port" value="/dev/gps"/>
+    <param name="baud" value="9600"/>
+    <!-- if this is true, should also get velocity data, but instead I
+         get parse errors and nothing is published -->
+    <param name="useRMC" value="false"/>
+  </node>
+
+  <node pkg="joy" type="joy_node" name="joy"/>
+
+  <node pkg="teleop_twist_joy" type="teleop_node" name="teleop">
+    <param name="enable_button" value="6"/>
+    <param name="axis_linear" value="5"/>
+    <param name="axis_angular" value="4"/>
+    <param name="scale_linear" value="0.5"/>
+    <param name="scale angular" value="1.0"/>
+  </node>
+
+  <node pkg="jr1_drivers" type="motor_driver" name="motor_driver"/>
 </launch>

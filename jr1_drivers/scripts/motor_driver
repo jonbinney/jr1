@@ -17,7 +17,7 @@ def create_command_string(cmd, args=[]):
     return cmd_str + chr(compute_checksum(cmd_str))
 
 class RoboClaw:
-    def __init__(self, port='/dev/ttyACM0', baudrate=38400):
+    def __init__(self, port='/dev/roboclaw', baudrate=38400):
         self._ser = serial.Serial(port, baudrate)
 
     def get_battery_voltage(self):
