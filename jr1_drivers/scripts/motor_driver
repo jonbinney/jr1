@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+import sys, time, struct, math
 import serial
-import sys, time, struct
+import rospy
+from geometry_msgs.msg import Twist
 
 
 def compute_checksum(msg):
@@ -37,19 +39,63 @@ class RoboClaw:
         return m1_cur*0.01, m2_cur*0.01
         time.sleep(0.01)
 
-    def drive(self, speed):
+    def drive_forward(self, speed):
         self._ser.write(create_command_string(12, [speed]))
         time.sleep(0.01)
 
-rc = RoboClaw()
+    def drive_m1(self, speed):
+        '''
+        Speed should be between -1.0 and 1.0
+        '''
+        command = int(round(64 + 63 * speed))
+        self._ser.write(create_command_string(6, [command]))
+        time.sleep(0.01)
 
-while True:
-    voltage = rc.get_battery_voltage()
-    rc.drive(64)
-    m1_cur, m2_cur = rc.get_motor_currents()
-    time.sleep(0.1)
-    print voltage, m1_cur, m2_cur
+    def drive_m2(self, speed):
+        '''
+        Speed should be between -1.0 and 1.0
+        '''
+        command = int(round(64 + 63 * speed))
+        self._ser.write(create_command_string(7, [command]))
+        time.sleep(0.01)
 
-ser.close()
+    def __del__(self):
+        try:
+            self._ser.close()
+        except:
+            pass
 
+class RoboClawNode:
+    def __init__(self):
+        self._rc = RoboClaw()
+        self._robot_radius = rospy.get_param('robot_radius', .15)
+        self._wheel_radius = rospy.get_param('wheel_radius', .15)
+
+        # Approximate maximum wheel velocity in rad/s
+        self._wheel_vel_max = rospy.get_param('wheel_vel_max', 8.0 / math.pi)
+        self._cmd_vel_sub = rospy.Subscriber('cmd_vel', Twist, self.twist_cb)
+
+    def twist_cb(self, msg):
+        '''
+        We don't have encoders, so we make the (crappy) assumption that velocity is proportional to the PWM
+        duty cycle.
+        '''
+        rospy.loginfo('Got velocity command: %f linear, %f angular', msg.linear.x, msg.angular.z)
+        u_r = (msg.linear.x + 0.5 * self._robot_radius * msg.angular.z) / self._wheel_radius
+        u_l = (msg.linear.x - 0.5 * self._robot_radius * msg.angular.z) / self._wheel_radius
+
+        # Convert the velocities into approximate fractions
+        fraction_r = u_r / self._wheel_vel_max
+        fraction_l = u_l / self._wheel_vel_max
+
+        # Clamp to range -1.0 to 1.0
+        fraction_r = math.copysign(min(1.0, abs(fraction_r)), fraction_r)
+        fraction_l = math.copysign(min(1.0, abs(fraction_l)), fraction_l)
+
+        self._rc.drive_m1(fraction_r)
+        self._rc.drive_m2(fraction_l)
+
+rospy.init_node('motor_driver')
+rcn = RoboClawNode()
+rospy.spin()
 
