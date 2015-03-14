@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="jr1_drivers" type="motor_driver" name="motor_driver"/>
+</launch>

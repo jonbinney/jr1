@@ -1,3 +1,4 @@
 <launch>
+    <include file="$(find jr1_launch)/launch/gps.launch"/>
     <include file="$(find jr1_launch)/launch/razor.launch"/>
 </launch>
