@@ -1,0 +1,1 @@
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="1e10", ATTR{idProduct}=="2000", GROUP="video", MODE="0666"
