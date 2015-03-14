@@ -1,4 +1,5 @@
 <launch>
     <include file="$(find jr1_launch)/launch/gps.launch"/>
     <include file="$(find jr1_launch)/launch/razor.launch"/>
+    <include file="$(find jr1_launch)/launch/cameras.launch"/>
 </launch>
