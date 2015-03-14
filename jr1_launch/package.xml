@@ -13,4 +13,7 @@
   <run_depend>nmea_navsat_driver</run_depend>
   <run_depend>joy</run_depend>
   <run_depend>teleop_twist_joy</run_depend>
+
+  <!-- For AHRS visualization tool -->
+  <run_depend>python-visual</run_depend>
 </package>
