@@ -1,0 +1,3 @@
+#!/bin/sh
+rosbag record -o jr1_$1 /rosout /cmd_vel /imu /right_camera/camera_info /right_camera/image_raw /left_camera/camera_info /left_camera/image_raw /diagnostics /gps/time_reference /gps/fix /gps/vel
+
