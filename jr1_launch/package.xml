@@ -19,4 +19,5 @@
   <run_depend>python-visual</run_depend>
   <!-- For IMU visualization in rviz -->
   <run_depend>rviz_imu_plugin</run_depend>
+  <run_depend>python-matplotlib</run_depend>
 </package>
