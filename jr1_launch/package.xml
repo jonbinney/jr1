@@ -17,4 +17,6 @@
   <run_depend>razor_imu_9dof</run_depend>
   <!-- For AHRS visualization tool -->
   <run_depend>python-visual</run_depend>
+  <!-- For IMU visualization in rviz -->
+  <run_depend>rviz_imu_plugin</run_depend>
 </package>
