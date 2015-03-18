@@ -1,16 +1,5 @@
 <launch>
-  <node pkg="joy" type="joy_node" name="joy">
-    <param name="autorepeat_rate" value="10.0"/>
-  </node>
-
-  <node pkg="teleop_twist_joy" type="teleop_node" name="teleop">
-    <param name="enable_button" value="5"/>
-    <param name="axis_linear" value="4"/>
-    <param name="axis_angular" value="3"/>
-    <param name="scale_linear" value="0.5"/>
-    <param name="scale angular" value="2.0"/>
-  </node>
-
   <include file="$(find jr1_launch)/launch/motors.launch"/>
   <include file="$(find jr1_launch)/launch/sensors.launch"/>
+  <include file="$(find jr1_launch)/launch/teleop.launch"/>
 </launch>
