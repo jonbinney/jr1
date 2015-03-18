@@ -3,7 +3,7 @@ import sys, time, struct, math
 import serial
 import rospy
 from geometry_msgs.msg import Twist
-
+from std_msgs.msg import Float32
 
 def compute_checksum(msg):
     return sum([ord(c) for c in msg]) & 0x7f
@@ -72,6 +72,8 @@ class RoboClawNode:
         # Approximate maximum wheel velocity in rad/s
         self._wheel_vel_max = rospy.get_param('wheel_vel_max', 32.0 / math.pi)
         self._cmd_vel_sub = rospy.Subscriber('cmd_vel', Twist, self.twist_cb)
+        self._left_cmd_pub = rospy.Publisher('cmd_left', Float32, queue_size=10)
+        self._right_cmd_pub = rospy.Publisher('cmd_right', Float32, queue_size=10)
 
     def twist_cb(self, msg):
         '''
@@ -92,6 +94,8 @@ class RoboClawNode:
 
         self._rc.drive_m1(fraction_r)
         self._rc.drive_m2(fraction_l)
+        self._left_cmd_pub.publish(Float32(fraction_l))
+        self._right_cmd_pub.publish(Float32(fraction_r))
 
 rospy.init_node('motor_driver')
 rcn = RoboClawNode()
