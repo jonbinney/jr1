@@ -49,7 +49,6 @@ class RoboClaw:
         '''
         command = int(round(64 + 63 * speed))
         self._ser.write(create_command_string(6, [command]))
-        time.sleep(0.01)
 
     def drive_m2(self, speed):
         '''
@@ -57,7 +56,6 @@ class RoboClaw:
         '''
         command = int(round(64 + 63 * speed))
         self._ser.write(create_command_string(7, [command]))
-        time.sleep(0.01)
 
     def __del__(self):
         try:
@@ -72,7 +70,7 @@ class RoboClawNode:
         self._wheel_radius = rospy.get_param('wheel_radius', .15)
 
         # Approximate maximum wheel velocity in rad/s
-        self._wheel_vel_max = rospy.get_param('wheel_vel_max', 8.0 / math.pi)
+        self._wheel_vel_max = rospy.get_param('wheel_vel_max', 32.0 / math.pi)
         self._cmd_vel_sub = rospy.Subscriber('cmd_vel', Twist, self.twist_cb)
 
     def twist_cb(self, msg):
@@ -81,8 +79,8 @@ class RoboClawNode:
         duty cycle.
         '''
         rospy.loginfo('Got velocity command: %f linear, %f angular', msg.linear.x, msg.angular.z)
-        u_r = (msg.linear.x + 0.5 * self._robot_radius * msg.angular.z) / self._wheel_radius
-        u_l = (msg.linear.x - 0.5 * self._robot_radius * msg.angular.z) / self._wheel_radius
+        u_r = -(msg.linear.x + 0.5 * self._robot_radius * msg.angular.z) / self._wheel_radius
+        u_l = -(msg.linear.x - 0.5 * self._robot_radius * msg.angular.z) / self._wheel_radius
 
         # Convert the velocities into approximate fractions
         fraction_r = u_r / self._wheel_vel_max
