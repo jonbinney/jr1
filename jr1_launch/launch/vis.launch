@@ -1,5 +1,5 @@
 <launch>
     <node pkg="rviz" type="rviz" name="jr1_rviz" args="-d $(find jr1_launch)/config/vis.rviz"/>
 
-    <node pkg="rqt_gui" type="rqt_gui" name="jr1_rqt"/>
+    <node pkg="rqt_gui" type="rqt_gui" name="jr1_rqt" args="--perspective-file $(find jr1_launch)/config/vis.perspective"/>
 </launch>
